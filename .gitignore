@@ -1,61 +1,35 @@
 # Python
-__pycache__/
-*.py[cod]
-*.egg-info/
 .venv/
 venv/
+__pycache__/
+*.py[cod]
 .pytest_cache/
 .coverage
-htmlcov/
 
-# Environment variables
-.env
-.env.*
-!.env.example
-
-# MLflow local storage
+# Local MLflow data
 mlflow.db
 mlflow.db-*
-mlruns/
 mlartifacts/
+mlruns/
 
-# Data files
+# Datasets
 data/raw/
 data/processed/
 
-# System files
-.DS_Store
-
-# Logs
-*.log
-logs/
-
-# Local backups
-*.backup
-*.backup.*
-*.before-*
-requirements.full-backup.txt
-requirements.backup.txt
-
-# IDE
-.vscode/
-.idea/
-
-# Local development
-.venv/
-__pycache__/
-.DS_Store
+# Environment and local files
 .env
 .env.*
 !.env.example
-
-# MLflow artifacts and databases
-mlflow.db
-mlflow.db-*
-mlartifacts/
-mlruns/
+.DS_Store
+*.log
 
 # Backups
 *.backup
 *.backup.*
 *.before-*
+requirements.backup.txt
+requirements.full-backup.txt
+
+# IDE
+.vscode/
+.idea/
