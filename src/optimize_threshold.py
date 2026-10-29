@@ -1,9 +1,11 @@
+import os
 from pathlib import Path
 
 import json
 
 import mlflow
 import mlflow.sklearn
+from mlflow import MlflowClient
 import numpy as np
 import pandas as pd
 
@@ -19,11 +21,36 @@ from sklearn.metrics import (
 # CONFIGURATION
 # ==================================================
 
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_tracking_uri(
+    os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5050")
+)
 
-RUN_ID = "ebbe98a1d9a44e6293a4589dfa900a01"
+EXPERIMENT_NAME = "MLflowOps-AI4I-Predictive-Maintenance"
+
+client = MlflowClient()
+
+experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+
+if experiment is None:
+    raise RuntimeError(
+        f"MLflow experiment not found: {EXPERIMENT_NAME}"
+    )
+
+runs = client.search_runs(
+    experiment_ids=[experiment.experiment_id],
+    filter_string="tags.mlflow.runName = 'XGBoost'",
+    order_by=["start_time DESC"],
+    max_results=1,
+)
+
+if not runs:
+    raise RuntimeError("No XGBoost training run found.")
+
+RUN_ID = runs[0].info.run_id
 
 MODEL_URI = f"runs:/{RUN_ID}/model"
+
+print(f"Selected XGBoost run: {RUN_ID}")
 
 DATA_PATH = Path("data/processed/validation.csv")
 
