@@ -759,6 +759,166 @@ if "prediction_result" in st.session_state:
         st.json(st.session_state["prediction_input"])
 
 
+
+# ============================================================
+# LIVE SYSTEM MONITORING
+# ============================================================
+
+st.html("""
+<div class="section-heading">
+    03 / Live System Monitoring
+</div>
+""")
+
+st.caption(
+    "Operational metrics collected from the FastAPI "
+    "Prometheus instrumentation."
+)
+
+if st.button("Refresh Monitoring Metrics", key="refresh_monitoring"):
+    st.rerun()
+
+
+def get_monitoring_metrics():
+    response = requests.get(
+        f"{API_URL}/metrics",
+        timeout=5,
+    )
+    response.raise_for_status()
+    return response.text
+
+
+def parse_prometheus_metrics(raw_text):
+    metrics = {}
+
+    for line in raw_text.splitlines():
+        if not line or line.startswith("#"):
+            continue
+
+        try:
+            name_and_labels, value = line.rsplit(" ", 1)
+            metrics[name_and_labels] = float(value)
+        except (ValueError, IndexError):
+            continue
+
+    return metrics
+
+
+try:
+    raw_metrics = get_monitoring_metrics()
+    metrics = parse_prometheus_metrics(raw_metrics)
+
+    total_predictions = metrics.get(
+        "mlflowops_predictions_total", 0
+    )
+
+    latency_sum = metrics.get(
+        "mlflowops_prediction_latency_seconds_sum", 0
+    )
+
+    latency_count = metrics.get(
+        "mlflowops_prediction_latency_seconds_count", 0
+    )
+
+    total_errors = metrics.get(
+        "mlflowops_prediction_errors_total", 0
+    )
+
+    average_latency_ms = (
+        (latency_sum / latency_count) * 1000
+        if latency_count > 0
+        else 0
+    )
+
+    total_requests = total_predictions + total_errors
+
+    error_rate = (
+        (total_errors / total_requests) * 100
+        if total_requests > 0
+        else 0
+    )
+
+    metric1, metric2, metric3, metric4 = st.columns(4)
+
+    metric1.metric(
+        "Total Predictions",
+        f"{int(total_predictions):,}",
+    )
+
+    metric2.metric(
+        "Average Latency",
+        f"{average_latency_ms:.2f} ms",
+    )
+
+    metric3.metric(
+        "Prediction Errors",
+        f"{int(total_errors):,}",
+    )
+
+    metric4.metric(
+        "Error Rate",
+        f"{error_rate:.2f}%",
+    )
+
+    st.write("")
+    st.markdown("#### Prediction Risk Distribution")
+
+    risk_counts = {}
+
+    for name, value in metrics.items():
+        if name.startswith("mlflowops_prediction_risk_total{"):
+            for risk in ("LOW", "MODERATE", "HIGH"):
+                if f'risk_level="{risk}"' in name:
+                    risk_counts[risk] = value
+
+    if risk_counts:
+        fig = go.Figure(
+            go.Bar(
+                x=list(risk_counts.keys()),
+                y=list(risk_counts.values()),
+                marker_color=[
+                    {
+                        "LOW": "#14B8A6",
+                        "MODERATE": "#F59E0B",
+                        "HIGH": "#FB7185",
+                    }.get(risk, "#64748B")
+                    for risk in risk_counts
+                ],
+            )
+        )
+
+        fig.update_layout(
+            height=320,
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            font={"color": "#FFFFFF"},
+            xaxis_title="Risk Category",
+            yaxis_title="Predictions",
+            margin=dict(l=20, r=20, t=20, b=40),
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+        )
+    else:
+        st.info(
+            "No risk distribution data yet. "
+            "Run a prediction to populate the chart."
+        )
+
+    st.caption(
+        "Metrics are collected from the running API instance. "
+        "Counters reset when the API process restarts."
+    )
+
+except (requests.RequestException, ValueError) as error:
+    st.warning(
+        "Monitoring metrics are temporarily unavailable. "
+        f"Details: {error}"
+    )
+
+
 # ============================================================
 # COPYRIGHT FOOTER
 # ============================================================

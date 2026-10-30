@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 
@@ -21,15 +22,35 @@ from sklearn.metrics import (
 # CONFIGURATION
 # ==================================================
 
-mlflow.set_tracking_uri("http://127.0.0.1:5000")
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5050"))
 
 EXPERIMENT_NAME = "MLflowOps-AI4I-Predictive-Maintenance"
 
 MODEL_NAME = "MLflowOps-Predictive-Maintenance"
 
-SOURCE_RUN_ID = "ebbe98a1d9a44e6293a4589dfa900a01"
+client = MlflowClient()
 
+experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+
+if experiment is None:
+    raise RuntimeError(
+        f"Experiment not found: {EXPERIMENT_NAME}"
+    )
+
+runs = client.search_runs(
+    experiment_ids=[experiment.experiment_id],
+    filter_string="tags.mlflow.runName = 'XGBoost'",
+    order_by=["start_time DESC"],
+    max_results=1,
+)
+
+if not runs:
+    raise RuntimeError("No XGBoost training run found.")
+
+SOURCE_RUN_ID = runs[0].info.run_id
 MODEL_URI = f"runs:/{SOURCE_RUN_ID}/model"
+
+print(f"Selected training run: {SOURCE_RUN_ID}")
 
 THRESHOLD_PATH = Path("data/processed/best_threshold.json")
 

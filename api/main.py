@@ -1,4 +1,5 @@
 import os
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
@@ -7,6 +8,14 @@ import mlflow.sklearn
 import pandas as pd
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from api.monitoring import (
+    PREDICTIONS_TOTAL,
+    PREDICTION_LATENCY,
+    PREDICTION_RISK,
+    PREDICTION_ERRORS,
+)
 from mlflow import MlflowClient
 from pydantic import BaseModel, Field
 
@@ -163,6 +172,15 @@ app = FastAPI(
 # HOME ENDPOINT
 # ==================================================
 
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics():
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
+    )
+
 @app.get("/")
 def home():
 
@@ -230,6 +248,8 @@ def predict(machine: MachineInput):
 
     }])
 
+    start_time = time.perf_counter()
+
     # Generate probability
     probability = float(
         model.predict_proba(input_data)[0][1]
@@ -247,6 +267,12 @@ def predict(machine: MachineInput):
         risk_level = "MODERATE"
     else:
         risk_level = "LOW"
+
+    PREDICTIONS_TOTAL.inc()
+    PREDICTION_RISK.labels(risk_level=risk_level).inc()
+    PREDICTION_LATENCY.observe(
+        time.perf_counter() - start_time
+    )
 
     return PredictionResponse(
 

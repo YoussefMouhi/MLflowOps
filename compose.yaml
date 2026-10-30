@@ -13,7 +13,7 @@ services:
       - "5050:5000"
     volumes:
       - ./:/app
-      - ./:/Users/youssefmouhi/Desktop/MLflowOps
+      - ./:${MLFLOW_LEGACY_PATH:-/app/legacy-mlflowops}
     restart: unless-stopped
 
   api:
@@ -31,7 +31,7 @@ services:
       - mlflow
     volumes:
       - ./:/app
-      - ./:/Users/youssefmouhi/Desktop/MLflowOps
+      - ./:${MLFLOW_LEGACY_PATH:-/app/legacy-mlflowops}
     restart: unless-stopped
 
   dashboard:
@@ -50,5 +50,5 @@ services:
       - api
     volumes:
       - ./:/app
-      - ./:/Users/youssefmouhi/Desktop/MLflowOps
+      - ./:${MLFLOW_LEGACY_PATH:-/app/legacy-mlflowops}
     restart: unless-stopped
