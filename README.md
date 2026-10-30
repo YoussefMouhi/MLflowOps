@@ -1,5 +1,10 @@
 # ⚙️ MLflowOps — Predictive Maintenance Intelligence
 
+<p align="center">
+  <img src="assets/mlflowops-banner.png" alt="MLflowOps Banner" width="100%">
+</p>
+
+
 [![MLflowOps CI](https://github.com/YoussefMouhi/MLflowOps/actions/workflows/ci.yml/badge.svg)](https://github.com/YoussefMouhi/MLflowOps/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E)
