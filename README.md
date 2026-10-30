@@ -1,14 +1,18 @@
 # ⚙️ MLflowOps — Predictive Maintenance Intelligence
 
 [![MLflowOps CI](https://github.com/YoussefMouhi/MLflowOps/actions/workflows/ci.yml/badge.svg)](https://github.com/YoussefMouhi/MLflowOps/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/Python-3.12-blue)
-![MLflow](https://img.shields.io/badge/MLflow-Model%20Registry-0194E2)
-![FastAPI](https://img.shields.io/badge/FastAPI-REST%20API-009688)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-EC6B23)
+![MLflow](https://img.shields.io/badge/MLflow-Registry-0194E2)
+![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B)
+![Plotly](https://img.shields.io/badge/Plotly-Charts-3F4F75)
+![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![Pytest](https://img.shields.io/badge/Pytest-Tests-0A9EDC)
 
 **An end-to-end MLOps project for machine-failure risk prediction, with tracked experiments, champion model serving, API observability, and automated CI.**
-
-**Technology:** Python · scikit-learn · XGBoost · MLflow · FastAPI · Streamlit · Plotly · Prometheus client · Docker Compose · Pytest · GitHub Actions
 
 > **Demonstration only:** Trained on the AI4I 2020 synthetic predictive maintenance dataset. The predictions have not been validated for real-world industrial safety decisions.
 
