@@ -12,7 +12,7 @@
 ![MLflow](https://img.shields.io/badge/MLflow-Registry-0194E2)
 ![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)
 ![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B)
-![Plotly](https://img.shields.io/badge/Plotly-Charts-3F4F75)
+![Plotly](https://img.shields.io/static/v1?label=Plotly&message=Charts&color=3F4F75)
 ![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![Pytest](https://img.shields.io/badge/Pytest-Tests-0A9EDC)
