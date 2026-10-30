@@ -205,7 +205,7 @@ MLflowOps/
 
 **Youssef MOUHI** — Data Science & Artificial Intelligence
 
-[GitHub](https://github.com/YoussefMouhi) · [Portfolio](https://youssef-mouhi-portfolio.vercel.app)
+[GitHub](https://github.com/YoussefMouhi)
 
 ---
 
