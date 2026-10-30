@@ -200,10 +200,6 @@ MLflowOps/
 | GitHub Actions CI | ✅ Workflow runs passed |
 | Prometheus metric exposition | ✅ Verified with a live prediction |
 | Streamlit monitoring dashboard | ✅ Verified visually |
-| Automatic inference-error accounting | ◻ Planned |
-| Portable, first-run deployment and artifact migration | ◻ Not yet verified |
-| Persistent monitoring/alerts | ◻ Planned |
-| Dashboard screenshot assets | ◻ To be added |
 
 ## Author
 
