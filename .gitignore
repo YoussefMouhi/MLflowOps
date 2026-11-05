@@ -13,8 +13,6 @@ mlartifacts/
 mlruns/
 
 # Datasets
-data/raw/
-data/processed/
 
 # Environment and local files
 .env
