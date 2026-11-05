@@ -162,6 +162,76 @@ python -m src.register_model
 
 These scripts assume a reachable MLflow server and write data/artifacts locally. In the existing host setup, the scripts default to `http://127.0.0.1:5050` where configured; inside Docker, use the service URL `http://mlflow:5000`. Threshold optimization and registration select the latest run named `XGBoost`; registration checks that the saved threshold references that same run. They are not yet a one-command portable bootstrap flow.
 
+## DVC dataset versioning — planned integration
+
+**Status: Not implemented yet.** The repository currently excludes `data/raw/` and `data/processed/` from Git and does not yet contain DVC metadata or a configured DVC remote. The commands below are an implementation plan, not a tested workflow.
+
+DVC will complement, not replace, MLflow:
+
+| Tool | Responsibility |
+|:--|:--|
+| Git | Source code, DVC pointer files, configuration |
+| DVC | Version the AI4I 2020 raw dataset and deterministic train/validation/test splits |
+| MLflow | Experiments, metrics, model artifacts, model registry |
+| Docker Compose | Existing MLflow, API and dashboard services |
+
+### Intended data flow
+
+```mermaid
+flowchart LR
+    A["AI4I 2020 dataset"] --> B["DVC: raw data"]
+    B --> C["Existing preprocessing script"]
+    C --> D["DVC: processed splits"]
+    D --> E["Existing training scripts"]
+    E --> F["MLflow experiments and registry"]
+    F --> G["FastAPI + Streamlit"]
+```
+
+### Initial local setup (run after confirming dataset paths)
+
+Create a feature branch, install DVC in the host Python environment, and initialize it at the repository root:
+
+```bash
+git switch -c feature/dvc-data-versioning
+python -m pip install "dvc>=3,<4"
+dvc init
+```
+
+The existing pipeline generates the expected source files with:
+
+```bash
+python -m src.download_data
+python -m src.preprocess
+```
+
+Verify that `data/raw/ai4i2020.csv` and `data/processed/{train,validation,test}.csv` exist before continuing. The repository currently ignores both data directories; replace those two broad Git ignore rules with DVC-managed ignores when running `dvc add`. Never commit raw CSV contents or secrets.
+
+```bash
+dvc add data/raw
+dvc add data/processed
+dvc status
+```
+
+Use a DVC remote **outside the Git working tree** for the initial local proof of concept:
+
+```bash
+mkdir -p "$HOME/dvc-storage/mlflowops"
+dvc remote add --local -d storage "$HOME/dvc-storage/mlflowops"
+dvc push
+```
+
+A local remote is not shared with other developers or CI. For reproducibility from a fresh clone, a properly permissioned remote must later be configured and tested using `dvc pull`. Do not publish remote credentials or restricted dataset contents.
+
+### Planned validation and next stages
+
+1. Confirm `dvc status` and `dvc push` succeed while the existing MLflow service remains unchanged.
+2. Run the existing Pytest suite; verify that inference still works against the pre-existing champion model.
+3. Add `dvc.yaml` and `dvc.lock` only after reviewing which stages are deterministic and where their outputs live. Do not accidentally run model registration as a side effect of ordinary DVC data reproduction.
+4. Log the dataset revision or DVC lockfile hash as an MLflow run tag to link training experiments to exact data versions.
+5. Verify the new workflow from a clean clone with a permitted remote and add targeted CI checks.
+
+**Preservation rule:** Do not delete or regenerate the existing `mlflow.db`, `mlartifacts/`, `mlruns/` or registered champion model when integrating DVC.
+
 ## Testing and Continuous Integration
 
 Tests are designed to run **without retraining or starting MLflow**, by mocking champion model loading in HTTP endpoint tests.
@@ -207,6 +277,7 @@ MLflowOps/
 | Docker-based MLflow / API / dashboard | ✅ Verified using existing local artifacts |
 | Pytest suite | ✅ 12 local tests passed |
 | GitHub Actions CI | ✅ Workflow runs passed |
+| DVC dataset versioning | 🛠️ Planned; not yet implemented |
 | Prometheus metric exposition | ✅ Verified with a live prediction |
 | Streamlit monitoring dashboard | ✅ Verified visually |
 
