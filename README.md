@@ -16,11 +16,11 @@
 ![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![Pytest](https://img.shields.io/badge/Pytest-Tests-0A9EDC)
-![DVC](https://img.shields.io/badge/DVC-Integration%20Planned-945DD6)
+![DVC](https://img.shields.io/badge/DVC-Data%20Versioning-945DD6)
 
 **An end-to-end MLOps project for machine-failure risk prediction, with tracked experiments, champion model serving, API observability, and automated CI.**
 
-**Next improvement — DVC data versioning:** We're adding dataset version control and reproducible data lineage alongside MLflow experiment tracking. **Status: planned, not yet implemented.** [See the DVC integration plan](#dvc-dataset-versioning--planned-integration).
+**DVC integration:** Raw AI4I data and processed datasets are now versioned with DVC metadata in Git. The initial DVC remote is **local to the developer's Mac**, not a shared cloud store. DVC pipeline automation and linking dataset revisions to MLflow runs remain planned. [See DVC details](#dvc-dataset-versioning).
 
 > **Demonstration only:** Trained on the AI4I 2020 synthetic predictive maintenance dataset. The predictions have not been validated for real-world industrial safety decisions.
 
@@ -29,6 +29,7 @@
 MLflowOps implements a model lifecycle rather than a standalone notebook:
 
 - **Data preparation:** AI4I 2020 data download, feature selection, stratified training/validation/test splits (70% / 15% / 15%).
+- **Dataset versioning:** DVC tracks the raw dataset and processed datasets using `data/raw.dvc` and `data/processed.dvc`.
 - **Experiment tracking:** Logistic Regression, Random Forest, and XGBoost experiments logged to MLflow, including validation metrics and evaluation plots.
 - **Model selection:** XGBoost candidate with an optimized decision threshold derived from validation data.
 - **Model Registry:** Versioned `MLflowOps-Predictive-Maintenance` model published under the `champion` alias.
@@ -40,21 +41,29 @@ MLflowOps implements a model lifecycle rather than a standalone notebook:
 
 ```mermaid
 flowchart TD
-    A["AI4I 2020 dataset"] --> B["Preprocess and stratified split"]
-    B --> C["Train 3 candidate models"]
-    C --> D["MLflow experiment tracking"]
-    D --> E["XGBoost threshold optimization"]
-    E --> F["Final held-out test evaluation"]
-    F --> G["MLflow Model Registry — champion"]
-    G --> H["FastAPI inference"]
-    H --> I["Streamlit prediction dashboard"]
-    H --> J["Prometheus /metrics endpoint"]
-    J --> K["Streamlit live monitoring"]
-    L["Pytest"] --> M["GitHub Actions CI"]
-    N["Docker Compose"] -.-> D
-    N -.-> H
-    N -.-> I
+    A["AI4I 2020 dataset"] --> B["Raw data — data/raw/"]
+    B --> C["Preprocess and stratified split"]
+    C --> D["Processed data — train / validation / test"]
+    D --> E["Train 3 candidate models"]
+    E --> F["MLflow experiment tracking"]
+    F --> G["XGBoost threshold optimization"]
+    G --> H["Held-out test evaluation"]
+    H --> I["MLflow Model Registry — champion"]
+    I --> J["FastAPI inference"]
+    J --> K["Streamlit prediction dashboard"]
+    J --> L["Prometheus /metrics"]
+    L --> M["Streamlit monitoring"]
+
+    N["DVC metadata — Git"] -.-> B
+    N -.-> D
+    O["Local DVC cache and storage"] -.-> N
+    P["Docker Compose"] -.-> F
+    P -.-> J
+    P -.-> K
+    Q["Pytest"] --> R["GitHub Actions CI"]
 ```
+
+**Reproducibility boundary:** DVC pointer files are committed in Git, but the DVC remote configured during initial development is stored locally on the developer's Mac. Reproducing datasets on another machine still requires a shared permitted remote and access to the dataset contents. MLflow model artifacts and the existing local champion registry are managed separately.
 
 ## Champion model results
 
@@ -165,75 +174,40 @@ python -m src.register_model
 
 These scripts assume a reachable MLflow server and write data/artifacts locally. In the existing host setup, the scripts default to `http://127.0.0.1:5050` where configured; inside Docker, use the service URL `http://mlflow:5000`. Threshold optimization and registration select the latest run named `XGBoost`; registration checks that the saved threshold references that same run. They are not yet a one-command portable bootstrap flow.
 
-## DVC dataset versioning — planned integration
+## DVC dataset versioning
 
-**Status: Not implemented yet.** The repository currently excludes `data/raw/` and `data/processed/` from Git and does not yet contain DVC metadata or a configured DVC remote. The commands below are an implementation plan, not a tested workflow.
+**Status: Implemented locally for dataset tracking.** DVC 3.67.1 was installed and initialized. Git now tracks `.dvc/`, `data/raw.dvc`, `data/processed.dvc`, and `data/.gitignore`. The contents of `data/raw/` and `data/processed/` are excluded from Git, and the two DVC pointer files describe their versioned contents.
 
-DVC will complement, not replace, MLflow:
+The initial dataset version contains:
 
-| Tool | Responsibility |
-|:--|:--|
-| Git | Source code, DVC pointer files, configuration |
-| DVC | Version the AI4I 2020 raw dataset and deterministic train/validation/test splits |
-| MLflow | Experiments, metrics, model artifacts, model registry |
-| Docker Compose | Existing MLflow, API and dashboard services |
+- **Raw:** `data/raw/ai4i2020.csv` — 10,000 rows, 12 columns.
+- **Processed:** `train.csv` (7,000 samples), `validation.csv` (1,500), `test.csv` (1,500), plus four existing analysis/configuration outputs in `data/processed/`.
 
-### Intended data flow
+DVC complements MLflow: **DVC versions datasets; MLflow tracks experiments, metrics and registered models.** No existing model artifacts or MLflow registry entries were changed to add DVC.
 
-```mermaid
-flowchart LR
-    A["AI4I 2020 dataset"] --> B["DVC: raw data"]
-    B --> C["Existing preprocessing script"]
-    C --> D["DVC: processed splits"]
-    D --> E["Existing training scripts"]
-    E --> F["MLflow experiments and registry"]
-    F --> G["FastAPI + Streamlit"]
-```
+### Storage and verification
 
-### Initial local setup (run after confirming dataset paths)
+During local setup, a private DVC remote was configured at `~/dvc-storage/mlflowops` using `dvc remote add --local`. The developer reported `dvc push` succeeded with **10 files pushed** and `dvc status` showed data up to date. The local remote path is **not committed**, intentionally; it is not accessible from a fresh clone or GitHub Actions.
 
-Create a feature branch, install DVC in the host Python environment, and initialize it at the repository root:
+The existing test suite also passed **12 tests** after DVC installation (one dependency deprecation warning). These checks do not prove that the data can be retrieved on a different machine.
+
+For an already configured local clone:
 
 ```bash
-git switch -c feature/dvc-data-versioning
-python -m pip install "dvc>=3,<4"
-dvc init
-```
-
-The existing pipeline generates the expected source files with:
-
-```bash
-python -m src.download_data
-python -m src.preprocess
-```
-
-Verify that `data/raw/ai4i2020.csv` and `data/processed/{train,validation,test}.csv` exist before continuing. The repository currently ignores both data directories; replace those two broad Git ignore rules with DVC-managed ignores when running `dvc add`. Never commit raw CSV contents or secrets.
-
-```bash
-dvc add data/raw
-dvc add data/processed
 dvc status
-```
-
-Use a DVC remote **outside the Git working tree** for the initial local proof of concept:
-
-```bash
-mkdir -p "$HOME/dvc-storage/mlflowops"
-dvc remote add --local -d storage "$HOME/dvc-storage/mlflowops"
 dvc push
+python -m pytest tests/ -q
 ```
 
-A local remote is not shared with other developers or CI. For reproducibility from a fresh clone, a properly permissioned remote must later be configured and tested using `dvc pull`. Do not publish remote credentials or restricted dataset contents.
+### Planned next improvements
 
-### Planned validation and next stages
+1. Set up a permitted **shared DVC remote** and verify `dvc pull` from a clean clone.
+2. Decide whether to track just training datasets or also intermediate evaluation files separately.
+3. Create a carefully scoped `dvc.yaml` and `dvc.lock` for deterministic data preparation; keep model registration outside automatic data reproduction.
+4. Log the dataset revision/hash to MLflow runs to link experiment metrics to the exact input data.
+5. Add reproducibility checks to CI when a remote is available.
 
-1. Confirm `dvc status` and `dvc push` succeed while the existing MLflow service remains unchanged.
-2. Run the existing Pytest suite; verify that inference still works against the pre-existing champion model.
-3. Add `dvc.yaml` and `dvc.lock` only after reviewing which stages are deterministic and where their outputs live. Do not accidentally run model registration as a side effect of ordinary DVC data reproduction.
-4. Log the dataset revision or DVC lockfile hash as an MLflow run tag to link training experiments to exact data versions.
-5. Verify the new workflow from a clean clone with a permitted remote and add targeted CI checks.
-
-**Preservation rule:** Do not delete or regenerate the existing `mlflow.db`, `mlartifacts/`, `mlruns/` or registered champion model when integrating DVC.
+**Important:** Do not delete existing `mlflow.db`, `mlartifacts/`, `mlruns/`, or the registered `champion` model when extending DVC.
 
 ## Testing and Continuous Integration
 
@@ -251,6 +225,12 @@ python -m pytest tests/ -v
 ```text
 MLflowOps/
 ├── .github/workflows/ci.yml
+├── .dvc/
+├── .dvcignore
+├── data/
+│   ├── .gitignore
+│   ├── raw.dvc
+│   └── processed.dvc
 ├── api/
 │   ├── main.py
 │   └── monitoring.py
@@ -280,7 +260,8 @@ MLflowOps/
 | Docker-based MLflow / API / dashboard | ✅ Verified using existing local artifacts |
 | Pytest suite | ✅ 12 local tests passed |
 | GitHub Actions CI | ✅ Workflow runs passed |
-| DVC dataset versioning | 🛠️ Planned; not yet implemented |
+| DVC dataset versioning | ✅ Raw and processed data tracked; 10 objects pushed to local remote |
+| Portable DVC data recovery | 🛠️ Planned: shared remote and fresh-clone test |
 | Prometheus metric exposition | ✅ Verified with a live prediction |
 | Streamlit monitoring dashboard | ✅ Verified visually |
 
