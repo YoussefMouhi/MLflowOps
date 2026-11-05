@@ -16,8 +16,11 @@
 ![Prometheus](https://img.shields.io/badge/Prometheus-Metrics-E6522C)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 ![Pytest](https://img.shields.io/badge/Pytest-Tests-0A9EDC)
+![DVC](https://img.shields.io/badge/DVC-Integration%20Planned-945DD6)
 
 **An end-to-end MLOps project for machine-failure risk prediction, with tracked experiments, champion model serving, API observability, and automated CI.**
+
+**Next improvement — DVC data versioning:** We're adding dataset version control and reproducible data lineage alongside MLflow experiment tracking. **Status: planned, not yet implemented.** [See the DVC integration plan](#dvc-dataset-versioning--planned-integration).
 
 > **Demonstration only:** Trained on the AI4I 2020 synthetic predictive maintenance dataset. The predictions have not been validated for real-world industrial safety decisions.
 
