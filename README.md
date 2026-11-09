@@ -37,44 +37,6 @@ MLflowOps implements a model lifecycle rather than a standalone notebook:
 - **User interface:** Streamlit machine-configuration form, probability visualization, model decision and live monitoring section.
 - **Quality checks:** Pytest unit and mocked HTTP endpoint tests run automatically through GitHub Actions.
 
-## Screenshots — Real application and MLOps evidence
-
-The images below are captures from the local MLflowOps demonstration on **9 November 2026**, using the synthetic AI4I 2020 dataset. They are displayed directly in the README, without an expandable section. They do not represent a public production service.
-
-### Streamlit dashboard
-
-![Streamlit machine configuration and API health](assets/screenshots/01-dashboard.png)
-
-### Predictive intelligence — Champion XGBoost
-
-![XGBoost failure probability, selected threshold and model decision](assets/screenshots/02-prediction.png)
-
-### Live API monitoring
-
-![API prediction count, inference latency and risk distribution](assets/screenshots/03-monitoring.png)
-
-### MLflow — Experiment comparison
-
-![Logistic Regression Random Forest and XGBoost tracked in MLflow](assets/screenshots/04-mlflow-runs.png)
-
-### MLflow — XGBoost validation
-
-![XGBoost validation confusion matrix captured in MLflow](assets/screenshots/05-mlflow-xgboost-evaluation.png)
-
-### MLflow — Champion model registry
-
-![MLflow version 1 model with champion alias](assets/screenshots/06-mlflow-registry.png)
-
-### DVC — Dataset versioning
-
-![DVC tracked datasets and synchronized local data storage](assets/screenshots/07-dvc-versioning.png)
-
-### FastAPI — Successful prediction
-
-![FastAPI predict response HTTP 200 with prediction JSON](assets/screenshots/08-fastapi-prediction.png)
-
-**Dataset and artifact availability:** Images are committed separately under `assets/screenshots/`. DVC tracks raw and processed data using a local remote; the model registry and trained artifacts also depend on the local environment. See [DVC dataset versioning](#dvc-dataset-versioning).
-
 ## Architecture
 
 ```mermaid
@@ -302,6 +264,44 @@ MLflowOps/
 | Portable DVC data recovery | 🛠️ Planned: shared remote and fresh-clone test |
 | Prometheus metric exposition | ✅ Verified with a live prediction |
 | Streamlit monitoring dashboard | ✅ Verified visually |
+
+## Screenshots — Real application and MLOps evidence
+
+The images below are captures from the local MLflowOps demonstration on **9 November 2026**, using the synthetic AI4I 2020 dataset. They are displayed directly in the README, without an expandable section. They do not represent a public production service.
+
+### Streamlit dashboard
+
+![Streamlit machine configuration and API health](assets/screenshots/01-dashboard.png)
+
+### Predictive intelligence — Champion XGBoost
+
+![XGBoost failure probability, selected threshold and model decision](assets/screenshots/02-prediction.png)
+
+### Live API monitoring
+
+![API prediction count, inference latency and risk distribution](assets/screenshots/03-monitoring.png)
+
+### MLflow — Experiment comparison
+
+![Logistic Regression Random Forest and XGBoost tracked in MLflow](assets/screenshots/04-mlflow-runs.png)
+
+### MLflow — XGBoost validation
+
+![XGBoost validation confusion matrix captured in MLflow](assets/screenshots/05-mlflow-xgboost-evaluation.png)
+
+### MLflow — Champion model registry
+
+![MLflow version 1 model with champion alias](assets/screenshots/06-mlflow-registry.png)
+
+### DVC — Dataset versioning
+
+![DVC tracked datasets and synchronized local data storage](assets/screenshots/07-dvc-versioning.png)
+
+### FastAPI — Successful prediction
+
+![FastAPI predict response HTTP 200 with prediction JSON](assets/screenshots/08-fastapi-prediction.png)
+
+**Dataset and artifact availability:** Images are committed separately under `assets/screenshots/`. DVC tracks raw and processed data using a local remote; the model registry and trained artifacts also depend on the local environment. See [DVC dataset versioning](#dvc-dataset-versioning).
 
 ## Author
 
