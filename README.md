@@ -37,6 +37,49 @@ MLflowOps implements a model lifecycle rather than a standalone notebook:
 - **User interface:** Streamlit machine-configuration form, probability visualization, model decision and live monitoring section.
 - **Quality checks:** Pytest unit and mocked HTTP endpoint tests run automatically through GitHub Actions.
 
+## Screenshots — Real application and MLOps evidence
+
+These screenshots were captured from the working local MLflowOps demonstration in November 2026. They show real application output from the **AI4I synthetic dataset**, not a hosted production deployment. The underlying local MLflow registry and DVC cache are not distributed with this repository.
+
+### Streamlit — Predictive maintenance workspace
+
+![MLflowOps Streamlit overview](assets/screenshots/01-dashboard.png)
+
+### Prediction Intelligence — Champion model
+
+![Machine-failure prediction, probability, threshold and risk classification](assets/screenshots/02-prediction.png)
+
+### Live System Monitoring
+
+![API monitoring, latency and prediction risk distribution](assets/screenshots/03-monitoring.png)
+
+<details>
+<summary><strong>Explore experiment tracking, evaluation, registry, DVC and FastAPI screenshots</strong></summary>
+
+#### MLflow — Experiment runs
+
+![Logistic Regression, Random Forest and XGBoost experiment runs](assets/screenshots/04-mlflow-runs.png)
+
+#### MLflow — XGBoost validation confusion matrix
+
+![XGBoost validation confusion matrix in MLflow artifacts](assets/screenshots/05-mlflow-xgboost-evaluation.png)
+
+#### MLflow — Registered champion model
+
+![MLflow Model Registry with champion alias and model version](assets/screenshots/06-mlflow-registry.png)
+
+#### DVC — Dataset tracking and local storage sync
+
+![Tracked DVC files, up-to-date local data and synchronized local storage](assets/screenshots/07-dvc-versioning.png)
+
+#### FastAPI — Successful inference
+
+![FastAPI prediction endpoint returning HTTP 200 with model response](assets/screenshots/08-fastapi-prediction.png)
+
+</details>
+
+**Reproduce the demonstration:** See [local deployment](#running-the-existing-local-deployment) and [DVC dataset versioning](#dvc-dataset-versioning). The DVC remote is currently **local**, and the MLflow registry depends on existing local artifacts.
+
 ## Architecture
 
 ```mermaid
