@@ -97,9 +97,9 @@ The monitoring panel reads the FastAPI `/metrics` endpoint and provides a manual
 | `mlflowops_predictions_total` | Successful predictions |
 | `mlflowops_prediction_latency_seconds` | Inference-duration histogram |
 | `mlflowops_prediction_risk_total{risk_level="..."}` | Successful predictions grouped by risk |
-| `mlflowops_prediction_errors_total` | Defined failure counter; **not yet incremented by error-handling code** |
+| `mlflowops_prediction_errors_total` | Failed model-inference attempts (incremented on prediction errors) |
 
-**Monitoring limitations:** Metrics currently live in the API process memory, so they reset when the process restarts. The dashboard's error count and error rate do not yet capture actual inference failures. The latency histogram measures the timed prediction section, not complete HTTP response time. No long-term Prometheus scraping service is configured in the current Compose stack.
+**Monitoring limitations:** Metrics currently live in the API process memory, so they reset when the process restarts. Inference failures are counted; request validation errors and model-startup failures are not included in this counter. The latency histogram measures the timed prediction section, not complete HTTP response time. No long-term Prometheus scraping service is configured in the current Compose stack.
 
 ## REST API
 
