@@ -250,29 +250,29 @@ def predict(machine: MachineInput):
 
     start_time = time.perf_counter()
 
-    # Generate probability
-    probability = float(
-        model.predict_proba(input_data)[0][1]
-    )
+    try:
+        # Time model inference and decision logic, including failures.
+        probability = float(model.predict_proba(input_data)[0][1])
+        prediction = int(probability >= decision_threshold)
 
-    # Apply optimized threshold
-    prediction = int(
-        probability >= decision_threshold
-    )
-
-    # Assign descriptive risk category
-    if prediction == 1:
-        risk_level = "HIGH"
-    elif probability >= decision_threshold * 0.7:
-        risk_level = "MODERATE"
-    else:
-        risk_level = "LOW"
+        if prediction == 1:
+            risk_level = "HIGH"
+        elif probability >= decision_threshold * 0.7:
+            risk_level = "MODERATE"
+        else:
+            risk_level = "LOW"
+    except Exception as exc:
+        PREDICTION_ERRORS.inc()
+        # Do not expose internal model or artifact details to API clients.
+        raise HTTPException(
+            status_code=503,
+            detail="Model inference temporarily unavailable",
+        ) from exc
+    finally:
+        PREDICTION_LATENCY.observe(time.perf_counter() - start_time)
 
     PREDICTIONS_TOTAL.inc()
     PREDICTION_RISK.labels(risk_level=risk_level).inc()
-    PREDICTION_LATENCY.observe(
-        time.perf_counter() - start_time
-    )
 
     return PredictionResponse(
 
